@@ -2,7 +2,7 @@ import requests
 import json
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-API_KEY = "AIzaSyBTfNGhbrL5YPBN7Jj8wjfgAtbwmcoTzFM"
+API_KEY = "f{API_KEY}"#AIzaSyBTfNGhbrL5YPBN7Jj8wjfgAtbwmcoTzFM
 VIDEO_ID = "q5-1qpYcdrM"
 MAX_RESULTS = 50
 
