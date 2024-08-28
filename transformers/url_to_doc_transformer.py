@@ -10,7 +10,7 @@ from docx import Document
 from urllib.parse import urlparse
 from webdriver_manager.chrome import ChromeDriverManager
 
-
+# selenium setup
 chrome_options = Options()
 chrome_options.add_argument("--headless")  
 chrome_options.add_argument("--no-sandbox")
