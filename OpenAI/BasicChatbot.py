@@ -1,5 +1,6 @@
 import openai
 
+openai.api_key = 'API_KEY'
 
 def get_bus_info(question):
     response = openai.ChatCompletion.create(
