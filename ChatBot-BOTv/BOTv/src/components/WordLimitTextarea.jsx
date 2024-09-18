@@ -9,7 +9,6 @@ const WordLimitTextarea = ({ wordLimitProp, handleLocalChange ,settings}) => {
     if (words.length > wordLimit) {
       return words.slice(0, wordLimit).join(' ');
     }
-    console.log(wordLimit);
     return content;
   };
 
@@ -40,7 +39,7 @@ const WordLimitTextarea = ({ wordLimitProp, handleLocalChange ,settings}) => {
         onChange={handleChange}
         className="w-full border rounded px-2 py-1"
       />
-      <div className="mt-2 text-sm text-gray-600">
+      <div className=" text-sm text-gray-600">
         {remainingWords} words remaining
       </div>
     </div>
