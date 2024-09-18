@@ -22,8 +22,10 @@ const ChatMessage = ({ message, isUser }) => (
 
 const ChatbotInterface = () => {
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+   
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [prompt, setPrompt] = useState('');
+  const [wordCountPrompt, setWordCountPrompt] = useState(0);
   const [settings, setSettings] = useState({
     botName: 'AI Assistant',
     contextLength: '500',
@@ -32,23 +34,48 @@ const ChatbotInterface = () => {
     conversationId: '',
     apiKey: '',
   });
+  const promptWordLimit = 100;
 
-  const handleSend = () => {
-    if (input.trim()) {
-      setMessages([...messages, { text: input, isUser: true }]);
-      // Here you would typically call your AI service API
-      postData("http://127.0.0.1:8000/settings/",settings)
-      
-      setMessages(msgs => [...msgs, { text: `You said: ${input}`, isUser: false }]);
-      
-      setInput('');
+  const handleSend = async () => {
+    if (prompt.trim()) {
+      const localMessages = [...messages, { text: prompt, isUser: true }];
+      setMessages(localMessages);
+  
+      const data = {
+        chatbot: { settings },
+        ui_messages: localMessages,
+      };
+  
+      try {
+        const response = await postData("http://127.0.0.1:8000/settings/", data);
+   
+        setMessages(messages => [...messages, { text: response.response, isUser: false }]);
+      } catch (error) {
+        console.error('Failed to send request:', error);
+      }
+ 
+      setPrompt('');
     }
   };
 
   const handleApplySettings = useCallback((newSettings) => {
     setSettings(newSettings);
   }, []);
-  console.log(settings);
+
+  const validateAndTrimContent = (content, promptWordLimit) => {
+    const words = content.trim().split(/\s+/);
+    if (words.length > promptWordLimit) {
+      return words.slice(0, promptWordLimit).join(' ');
+    }
+    return content;
+  };
+
+  const handlePromptChange = (event) => {
+    const newValue = event.target.value;
+    const trimmedValue = validateAndTrimContent(newValue, promptWordLimit);
+    setPrompt(trimmedValue);
+    setWordCountPrompt(trimmedValue.trim().split(/\s+/).length);
+  };
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto">
       <div className="bg-white shadow-lg rounded-lg flex flex-col h-full">
@@ -63,12 +90,12 @@ const ChatbotInterface = () => {
             <ChatMessage key={index} message={msg.text} isUser={msg.isUser} />
           ))}
         </div>
-        <div className="p-4 border-t">
+        <div className="p-4 pb-0 border-t">
           <div className="flex items-center">
             <input
               type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+              value={prompt}
+              onChange={handlePromptChange}
               onClick={(e) => e.key === 'Enter' && handleSend()}
               className="flex-1 border rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Type your message..."
@@ -79,6 +106,10 @@ const ChatbotInterface = () => {
             >
               <Send size={20} />
             </button>
+           
+          </div>
+          <div className="ml-2  text-sm text-gray-600">
+            { promptWordLimit -wordCountPrompt} words remaining
           </div>
         </div>
       </div>
