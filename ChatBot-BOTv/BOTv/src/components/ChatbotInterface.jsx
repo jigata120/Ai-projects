@@ -21,8 +21,10 @@ const ChatMessage = ({ message, isUser }) => (
  
 
 const ChatbotInterface = () => {
+  const [allMessages, setAllMessages] = useState([]);
   const [messages, setMessages] = useState([]);
-   
+  const [serverSummary, setServerSummary] = useState('');
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [wordCountPrompt, setWordCountPrompt] = useState(0);
@@ -33,23 +35,40 @@ const ChatbotInterface = () => {
     outputLength: '50',
     conversationId: '',
     apiKey: '',
+    limitSummary:1000,
   });
   const promptWordLimit = 100;
 
   const handleSend = async () => {
+    console.log(messages);
+
     if (prompt.trim()) {
-      const localMessages = [...messages, { text: prompt, isUser: true }];
+      
+      let localMessages = [...messages, { text: prompt, isUser: true }];
+      const localAllMessages =[...allMessages, { text: prompt, isUser: true }];
       setMessages(localMessages);
-  
+      setAllMessages(localAllMessages)
+
       const data = {
         chatbot: { settings },
         ui_messages: localMessages,
+        summary: serverSummary
       };
   
       try {
         const response = await postData("http://127.0.0.1:8000/settings/", data);
-   
-        setMessages(messages => [...messages, { text: response.response, isUser: false }]);
+        
+        let localMessagesResponse =[...localMessages, { text: response.response, isUser: false }]
+        const localAllMessagesResponse =[...localAllMessages, { text: response.response, isUser: false }]
+        
+        
+        if (response.isSummarized){
+          setServerSummary(response.summary)
+          localMessagesResponse =[];
+        }
+        setMessages(localMessagesResponse);
+        setAllMessages(localAllMessagesResponse)
+ 
       } catch (error) {
         console.error('Failed to send request:', error);
       }
@@ -86,7 +105,7 @@ const ChatbotInterface = () => {
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((msg, index) => (
+          {allMessages.map((msg, index) => (
             <ChatMessage key={index} message={msg.text} isUser={msg.isUser} />
           ))}
         </div>
