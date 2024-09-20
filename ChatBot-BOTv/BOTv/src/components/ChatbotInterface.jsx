@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Send, User, Bot, Settings } from 'lucide-react';
 import { BotSettings } from './BotSettings';
-import { postData } from '../Api';
+import { getData, postData, updateData } from '../Api';
+import { useParams } from 'react-router-dom';
 
 
 const ChatMessage = ({ message, isUser }) => (
@@ -20,7 +21,7 @@ const ChatMessage = ({ message, isUser }) => (
 
  
 
-const ChatbotInterface = () => {
+const ChatbotInterface = ({hasMemory}) => {
   const [allMessages, setAllMessages] = useState([]);
   const [messages, setMessages] = useState([]);
   const [serverSummary, setServerSummary] = useState('');
@@ -38,6 +39,29 @@ const ChatbotInterface = () => {
     limitSummary:1000,
   });
   const promptWordLimit = 100;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  useEffect(() => {
+    
+      if (hasMemory){
+        const { chatId } = useParams(); 
+
+        const fetchData = async () => {
+
+          const data =await getData('http://127.0.0.1:8000/chat_id/227b0dae-2fcd-4dcd-88a3-78e85099e06c/');
+          setAllMessages(data.all_messages)
+          setSettings(data.session_data.settings)
+          setMessages(data.session_data.ui_messages)
+          setServerSummary(data.session_data.summary)
+          
+          return data
+        };
+      
+        const data =  fetchData();
+        console.log(data);
+      }
+    
+  }, []);
 
   const handleSend = async () => {
     console.log(messages);
@@ -68,8 +92,17 @@ const ChatbotInterface = () => {
         }
         setMessages(localMessagesResponse);
         setAllMessages(localAllMessagesResponse)
- 
-      } catch (error) {
+        const dbData = {
+          chatbot: { settings:settings ,
+          ui_messages: localMessages,
+          summary: serverSummary},
+          all_messages:localAllMessagesResponse
+        };
+        setPrompt('');
+        if (uuidRegex.test(settings.conversationId)){
+          const saveData = await updateData(`http://127.0.0.1:8000/update_chat_data/${settings.conversationId}/`,dbData)
+        }
+        } catch (error) {
         console.error('Failed to send request:', error);
       }
  
@@ -79,6 +112,21 @@ const ChatbotInterface = () => {
 
   const handleApplySettings = useCallback((newSettings) => {
     setSettings(newSettings);
+    // console.log(newSettings.conversationId.trim());
+   
+    if (uuidRegex.test(newSettings.conversationId)){
+      const dbData = {
+        chatbot: { settings:settings ,
+        ui_messages: messages,
+        summary: serverSummary},
+        all_messages:allMessages
+      };
+      const update = async () => {
+      const saveData = await updateData(`http://127.0.0.1:8000/update_chat_data/${settings.conversationId}/`,dbData)
+      }
+      // console.log("update settings");
+      update()
+    }
   }, []);
 
   const validateAndTrimContent = (content, promptWordLimit) => {
