@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {X, Check } from 'lucide-react';
 import WordLimitTextarea from './WordLimitTextarea';
-export const BotSettings = ({ isOpen, onClose, settings, onSettingsChange, onApply }) => {
+export const BotSettings = ({ isOpen, onClose, settings, onSettingsChange, onApply,hasMemory }) => {
     const [localSettings, setLocalSettings] = useState(settings);
     const [hasChanges, setHasChanges] = useState(false);
   
@@ -52,8 +52,8 @@ export const BotSettings = ({ isOpen, onClose, settings, onSettingsChange, onApp
                 className="w-full border border-gray-300 bg-white rounded-md shadow-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition duration-150 ease-in-out"
               >
                 <option value="500">500 words</option>
-                <option value="1500">1500 words</option>
-                <option value="3000">3000 words</option>
+                <option disabled={true} value="1500">1500 words (plan)</option>
+                <option disabled={true} value="3000">3000 words (plan)</option>
               </select>
             </div>
             <div>
@@ -73,12 +73,12 @@ export const BotSettings = ({ isOpen, onClose, settings, onSettingsChange, onApp
                 >
                 <option 
                 className="w-full border border-gray-300 bg-white rounded-md shadow-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition duration-150 ease-in-out"
-                value="50">50 words</option>
+                value="50">50 words </option>
                 <option 
                 className="w-full border border-gray-300 bg-white rounded-md shadow-sm px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition duration-150 ease-in-out"
-                value="100">100 words</option>
+                disabled={true} value="100">100 words (plan)</option>
                 <option 
-                value="150">150 words</option>
+                disabled={true} value="150">150 words (plan)</option>
                 </select>
 
             </div>
@@ -87,13 +87,13 @@ export const BotSettings = ({ isOpen, onClose, settings, onSettingsChange, onApp
               <input
                 type="text"
                 placeholder="Optional"
-                value={localSettings.conversationId}
+                value={hasMemory?settings.conversationId:localSettings.conversationId}
                 onChange={(e) => handleLocalChange('conversationId', e.target.value)}
                 className="w-full border rounded px-2 py-1"
               />
             </div>
             <div>
-              <label className="block mb-1">API Key</label>
+              <label className="block mb-1">API Key (plan)</label>
               <input
                 type="password"
                 placeholder="Optional"
