@@ -1,20 +1,23 @@
-import { useState } from 'react'
- 
- 
-import ChatbotInterface from './components/ChatbotInterface'
+import ChatbotInterface from './components/ChatbotInterface';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-function App() {
-  const [count, setCount] = useState(0)
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LandingPage from './components/LandingPage';
 
+function App() {
   return (
-    <>
-     <React.StrictMode>
-        <ChatbotInterface />
-    </React.StrictMode>,
-    </>
-  )
+    <Router>
+      <React.StrictMode>
+        <Routes>
+          <Route path="/chat/:chatId" element={<ChatbotInterface hasMemory={true} />} />
+          <Route path="/chat" element={<ChatbotInterface hasMemory={false} />} />
+          <Route path="/" element={<LandingPage  />} />
+
+        </Routes>
+      </React.StrictMode>
+    </Router>
+  );
 }
 
-export default App
+export default App;
