@@ -22,6 +22,7 @@ const ChatMessage = ({ message, isUser }) => (
  
 
 const ChatbotInterface = ({hasMemory}) => {
+  const { chatId } = useParams();
   const [allMessages, setAllMessages] = useState([]);
   const [messages, setMessages] = useState([]);
   const [serverSummary, setServerSummary] = useState('');
@@ -42,26 +43,30 @@ const ChatbotInterface = ({hasMemory}) => {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
   useEffect(() => {
-    
-      if (hasMemory){
-        const { chatId } = useParams(); 
+    if (hasMemory && chatId) {
+      const fetchData = async () => {
+        try {
+          const data = await getData(`http://127.0.0.1:8000/chat_id/${chatId}/`);
+          const localSettings = data.session_data.settings
+          setAllMessages(data.all_messages);
+          console.log(chatId);
+          console.log(localSettings);
+          const newSettings = { ...localSettings, ['conversationId']: chatId }
+          console.log(newSettings);
+          setSettings(newSettings);
+          setMessages(data.session_data.ui_messages);
+          setServerSummary(data.session_data.summary);
+          return data;
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
 
-        const fetchData = async () => {
-
-          const data =await getData('http://127.0.0.1:8000/chat_id/227b0dae-2fcd-4dcd-88a3-78e85099e06c/');
-          setAllMessages(data.all_messages)
-          setSettings(data.session_data.settings)
-          setMessages(data.session_data.ui_messages)
-          setServerSummary(data.session_data.summary)
-          
-          return data
-        };
-      
-        const data =  fetchData();
-        console.log(data);
-      }
-    
-  }, []);
+      fetchData().then((data) => {
+        console.log('Fetched data:', data);
+      });
+    }
+  }, [hasMemory, chatId]);
 
   const handleSend = async () => {
     console.log(messages);
@@ -185,6 +190,7 @@ const ChatbotInterface = ({hasMemory}) => {
         onClose={() => setIsSettingsOpen(false)}
         settings={settings}
         onApply={handleApplySettings}
+        hasMemory={hasMemory}
       />
     </div>
   );
